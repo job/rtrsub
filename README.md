@@ -7,7 +7,7 @@ routers.
 Templates are in jinja2 format. Thanks to the template approach, you can adopt
 this tool to any platform or routing policy configuration style.
 
-Review the [bird.j2](../blob/master/template-examples/bird.j2) for an example.
+Review the [bird.j2](../master/template-examples/bird.j2) for an example.
 
 The dictionary available to the template is called `data`. Layout of the
 dictionary is as following:
