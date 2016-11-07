@@ -48,14 +48,6 @@ if sys.argv[-1] == 'publish':
     sys.exit()
 
 
-def get_data_files():
-    man_path = '/usr/share/man/man7'
-    if os.getenv('TRAVIS_BUILD_ID'):
-        print("not installing manpage in travis environment")
-    elif os.path.exists(man_path):
-        files = [(man_path, ['rtrsub/rtrsub.7'])]
-        return files
-
 setup(
     name='rtrsub',
     version=version,
@@ -75,5 +67,4 @@ setup(
     ],
     packages=find_packages(exclude=['tests', 'tests.*']),
     entry_points={'console_scripts': ['rtrsub = rtrsub.cli:main']},
-    data_files=get_data_files()
 )
