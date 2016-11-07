@@ -1,4 +1,4 @@
-function origin_validation()
+function is_roa_covered_prefix()
 prefix set roas;
 {
      roas = [
@@ -11,9 +11,16 @@ prefix set roas;
 {{ " " }}
 {%- endif -%}
 {%- endfor %}
-    ]
+    ];
 
-    if ! net ~ roas then {
-        return false;
+    if net ~ roas then {
+        return true;
     }
+    else return false;
 }
+
+function violates_roa()
+{
+{% for item in data -%}
+{{ item.origins }}
+{%- endfor %}
