@@ -89,21 +89,14 @@ def main():
     else:
         validator_export = json.load(open(args.cache, "r"))
 
-    print(args)
+    data = load_tree(args.afi, validator_export)
 
-    load_tree(args.afi, validator_export)
-
-"""
-Vurt:rpki2bird job$ cat export.json | jq . | head
-{
-  "roas": [
-    {
-      "asn": "AS21219",
-      "prefix": "77.222.128.0/20",
-      "maxLength": 20,
-      "ta": "RIPE NCC RPKI Root (RRDP prefetch)"
-    },
-"""
+    if args.output == "-":
+        print(template.render(data=data))
+    else:
+        f = open(args.output, 'w')
+        f.write(template.render(data=data))
+        f.close
 
 
 def load_tree(afi, export):
@@ -112,6 +105,10 @@ def load_tree(afi, export):
     :param export:  the JSON blob with all ROAs
     """
     tree = {}
+
+    """ each roa has these fields:
+        asn, prefix, maxLength, ta
+    """
 
     for roa in export['roas']:
         prefix = ip_network(roa['prefix'])
@@ -131,6 +128,8 @@ def load_tree(afi, export):
             print(pprint.pformat(roa, indent=4), file=sys.stderr)
             continue
 
+        prefix = str(prefix).strip()
+
         if prefix not in tree:
             tree[prefix] = {}
             tree[prefix]['origins'] = [asn]
@@ -138,7 +137,7 @@ def load_tree(afi, export):
             if asn not in tree[prefix]['origins']:
                 tree[prefix]['origins'] += [asn]
 
-    pprint.pprint(tree)
+    return tree
 
 if __name__ == '__main__':
     main()
