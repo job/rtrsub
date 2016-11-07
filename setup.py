@@ -63,6 +63,7 @@ setup(
     license='BSD 2-Clause',
     keywords='rpki prefix routing networking',
     setup_requires=reqs,
+    install_requires=reqs,
     classifiers=[
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
