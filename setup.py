@@ -47,6 +47,9 @@ if sys.argv[-1] == 'publish':
     print("  git push --tags")
     sys.exit()
 
+install_reqs = parse_requirements('requirements.txt', session="")
+reqs = [str(ir.req) for ir in install_reqs]
+
 
 setup(
     name='rtrsub',
@@ -58,6 +61,7 @@ setup(
     long_description=README,
     license='BSD 2-Clause',
     keywords='rpki prefix routing networking',
+    setup_requires=reqs,
     classifiers=[
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
