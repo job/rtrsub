@@ -2,8 +2,8 @@ function is_roa_covered_prefix()
 prefix set roas;
 {
      roas = [
-        {% for item in data -%}
-{{ item }}+
+        {% for prefix in data -%}
+{{ prefix }}+
 {%- if not loop.last -%},{%- endif -%}
 {%- if loop.index % 4 == 0 -%}
 {{ "\n        " }}
@@ -19,8 +19,14 @@ prefix set roas;
     else return false;
 }
 
-function violates_roa()
+function complies_with_roa()
 {
-{% for item in data -%}
-{{ item.origins }}
+{%- for prefix in data %}
+     if net = {{ prefix }} {
+{%- for origin in data[prefix]["origins"] %}
+         if bgp_path.last = {{ origin }} return true;
 {%- endfor %}
+     }
+{%- endfor %}
+     return false;
+}
