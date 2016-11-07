@@ -1,8 +1,8 @@
 rtrsub - RTR Substitution
 =========================
 
-A substitute for the RTR protocol: generate static config blobs for your
-routers.
+A substitute for the RTR protocol: generate configuration blobs for your
+routers instead of using the RTR protocol to interact with RPKI.
 
 Templates are in jinja2 format. Thanks to the template approach, you can adopt
 this tool to any platform or routing policy configuration style.
