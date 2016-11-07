@@ -30,9 +30,10 @@
 from __future__ import print_function
 
 from ipaddress import ip_network
-from jinja2 import Template
+import jinja2
 import json
 import pprint
+import os
 import sys
 
 try:
@@ -80,8 +81,11 @@ def main():
         sys.exit(2)
 
     if args.template == "-":
-        print("INFO: reading template from STDIN", file=sys.stderr)
-        template = Template("\n".join(sys.stdin))
+        template_stdin = sys.stdin.read()
+        template = jinja2.Template(template_stdin)
+    else:
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader('/'))
+        template = env.get_template(os.path.abspath(args.template))
 
     if 'http' in args.cache:
         r = requests.get(args.cache)
@@ -128,7 +132,7 @@ def load_tree(afi, export):
             print(pprint.pformat(roa, indent=4), file=sys.stderr)
             continue
 
-        prefix = str(prefix).strip()
+        prefix = str(prefix)
 
         if prefix not in tree:
             tree[prefix] = {}

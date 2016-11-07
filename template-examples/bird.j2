@@ -1,15 +1,19 @@
 function origin_validation()
 prefix set roas;
 {
-    roas = [
-        {%- for item in data -%}
+     roas = [
+        {% for item in data -%}
+{{ item }}+
+{%- if not loop.last -%},{%- endif -%}
+{%- if loop.index % 4 == 0 -%}
+{{ "\n        " }}
+{%- else -%}
+{{ " " }}
+{%- endif -%}
+{%- endfor %}
+    ]
 
-        {{ item }},
-
-
-        {%- endfor -%}
-
-    if net ~ roas then {
-        YYYY
+    if ! net ~ roas then {
+        return false;
     }
 }
