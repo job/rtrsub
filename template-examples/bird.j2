@@ -22,11 +22,12 @@ prefix set roas;
 function complies_with_roa()
 {
 {%- for prefix in data %}
-     if net = {{ prefix }} {
+     if net = {{ prefix }} then {
 {%- for origin in data[prefix]["origins"] %}
-         if bgp_path.last = {{ origin }} return true;
+         if bgp_path.last = {{ origin }} then return true;
 {%- endfor %}
      }
 {%- endfor %}
      return false;
 }
+
