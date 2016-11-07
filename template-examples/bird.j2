@@ -24,8 +24,8 @@ function complies_with_roa()
 {%- for prefix in data %}
     if net = {{ prefix }} then {
 {%- for origin in data[prefix]["origins"] %}
-{%- if origin == "0" %}
-        return false;
+{%- if origin == 0 %}
+        return false; /* AS0 */
 {%- else %}
         if bgp_path.last = {{ origin }} then return true;
 {%- endif %}
