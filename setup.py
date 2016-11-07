@@ -32,8 +32,9 @@ import codecs
 import os
 import sys
 
-from setuptools import setup, find_packages
 from os.path import abspath, dirname, join
+from pip.req import parse_requirements
+from setuptools import setup, find_packages
 
 here = abspath(dirname(__file__))
 
