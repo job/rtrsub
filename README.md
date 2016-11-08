@@ -1,6 +1,8 @@
 rtrsub - RTR Substitution
 =========================
 
+*WARNING: NOT SUITABLE FOR PRODUCTION USE - PROOF OF CONCEPT*
+
 A substitute for the RTR protocol: generate configuration blobs for your
 routers instead of using the RTR protocol to interact with RPKI.
 
