@@ -75,7 +75,7 @@ def main():
                         help="Display rtrsub version")
 
     parser.add_argument('-r', dest='ruby', action='store_true',
-                        help="Use other style delimiters in the template: <%, %>,<<, >>, <#, #>")
+                        help='Use other delimiters')
 
     args = parser.parse_args()
 
@@ -83,17 +83,22 @@ def main():
         print("ERROR: afi must be 'ipv4', 'ipv6' or 'mixed'")
         sys.exit(2)
 
+    if args.ruby:
+        env = jinja2.Environment(
+            block_start_string='<%',
+            block_end_string='%>',
+            variable_start_string='<<',
+            variable_end_string='>>',
+            comment_start_string='<#',
+            comment_end_string='#>')
+    else:
+        env = jinja2.Environment()
+
     if args.template == "-":
         template_stdin = sys.stdin.read()
-        template = jinja2.Template(template_stdin)
+        template = env.from_string(template_stdin)
     else:
-        if args.ruby:
-            env = jinja2.Environment('<%', '%>', '<<', '>>', '<#', '#>',
-                                     loader=jinja2.FileSystemLoader('/'))
-        else:
-            env = jinja2.Environment(loader=jinja2.FileSystemLoader('/'))
-
-        template = env.get_template(os.path.abspath(args.template))
+        template = env.from_string(open(os.path.abspath(args.template), 'r').read())
 
     if 'http' in args.cache:
         r = requests.get(args.cache)
