@@ -74,6 +74,9 @@ def main():
     parser.add_argument('-v', dest='version', action='store_true',
                         help="Display rtrsub version")
 
+    parser.add_argument('-r', dest='ruby', action='store_true',
+                        help="Use other style delimiters in the template: <%, %>,<<, >>, <#, #>")
+
     args = parser.parse_args()
 
     if args.afi not in ["ipv4", "ipv6", "mixed"]:
@@ -84,7 +87,12 @@ def main():
         template_stdin = sys.stdin.read()
         template = jinja2.Template(template_stdin)
     else:
-        env = jinja2.Environment(loader=jinja2.FileSystemLoader('/'))
+        if args.ruby:
+            env = jinja2.Environment('<%', '%>', '<<', '>>', '<#', '#>',
+                                     loader=jinja2.FileSystemLoader('/'))
+        else:
+            env = jinja2.Environment(loader=jinja2.FileSystemLoader('/'))
+
         template = env.get_template(os.path.abspath(args.template))
 
     if 'http' in args.cache:
