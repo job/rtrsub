@@ -151,9 +151,11 @@ def load_tree(afi, export):
         if prefix not in tree:
             tree[prefix] = {}
             tree[prefix]['origins'] = [asn]
+            tree[prefix]['maxlength'] = maxlength
         else:
             if asn not in tree[prefix]['origins']:
                 tree[prefix]['origins'] += [asn]
+                tree[prefix]['maxlength'] = maxlength
 
     return tree
 
