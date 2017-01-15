@@ -129,12 +129,12 @@ def load_tree(afi, export):
     """
 
     for roa in export['roas']:
-        prefix = ip_network(roa['prefix'])
+        prefix_obj = ip_network(roa['prefix'])
         if afi == "ipv4":
-            if prefix.version == 6:
+            if prefix_obj.version == 6:
                 continue
         elif afi == "ipv6":
-            if prefix.version == 4:
+            if prefix_obj.version == 4:
                 continue
 
         try:
@@ -146,7 +146,7 @@ def load_tree(afi, export):
             print(pprint.pformat(roa, indent=4), file=sys.stderr)
             continue
 
-        prefix = str(prefix)
+        prefix = str(prefix_obj)
 
         if prefix not in tree:
             tree[prefix] = {}
@@ -154,6 +154,9 @@ def load_tree(afi, export):
         else:
             if asn not in tree[prefix]['origins']:
                 tree[prefix]['origins'] += [asn]
+
+        tree[prefix]['maxlength'] = int(roa['maxLength'])
+        tree[prefix]['prefixlen'] = prefix_obj.prefixlen
 
     return tree
 
