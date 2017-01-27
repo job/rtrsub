@@ -36,7 +36,7 @@ function complies_with_roa()
 }
 
 {%- for origin in origin_dict %}
-function match_AS{{ origin }}_{{ afi }}
+function match_AS{{ origin }}_{{ afi }}()
 prefix set roas
 {
     roas = [
