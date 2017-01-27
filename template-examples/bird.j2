@@ -2,7 +2,7 @@ function is_roa_covered_prefix()
 prefix set roas;
 {
      roas = [
-        {% for prefix in data -%}
+        {% for prefix in pfx_dict -%}
 {{ prefix }}+
 {%- if not loop.last -%},{%- endif -%}
 {%- if loop.index % 4 == 0 -%}
@@ -21,9 +21,9 @@ prefix set roas;
 
 function complies_with_roa()
 {
-{%- for prefix in data %}
+{%- for prefix in pfx_dict %}
     if net = {{ prefix }} then {
-{%- for origin in data[prefix]["origins"] %}
+{%- for origin in pfx_dict[prefix]["origins"] %}
 {%- if origin == 0 %}
         return false;
 {%- else %}
@@ -34,6 +34,32 @@ function complies_with_roa()
 {%- endfor %}
      return false;
 }
+
+{%- for origin in origin_dict %}
+function match_AS{{ origin }}_{{ afi }}
+prefix set roas
+{
+    roas = [
+        {% for prefix in origin_dict[origin] -%}
+{%- if origin_dict[origin][prefix]['length'] == origin_dict[origin][prefix]['maxlength'] -%}
+    {{ prefix }}
+{%- else -%}
+    {{ prefix }}{{ "{" }}{{ origin_dict[origin][prefix]['length'] }},{{ origin_dict[origin][prefix]['maxlength'] }}{{ "}" }}
+{%- endif -%}
+{%- if not loop.last -%},{%- endif -%}
+{%- if loop.index % 4 == 0 -%}
+{{ "\n        " }}
+{%- else -%}
+{{ " " }}
+{%- endif -%}
+{%- endfor %}
+    ];
+    if net ~ roas then {
+        return true;
+    }
+    return false;
+}
+{% endfor %}
 
 filter check_roa
 {

@@ -2,7 +2,7 @@ function is_roa_covered_prefix()
 prefix set roas;
 {
      roas = [
-        <% for prefix in data -%>
+        <% for prefix in pfx_dict -%>
 <%= prefix %>+
 <%- if not loop.last -%>,<%- endif -%>
 <%- if loop.index % 4 == 0 -%>
@@ -21,13 +21,13 @@ prefix set roas;
 
 function complies_with_roa()
 {
-%% for prefix in data
-%%     if data[prefix]["prefixlen"] == data[prefix]["maxlength"]
+%% for prefix in pfx_dict
+%%     if pfx_dict[prefix]["prefixlen"] == pfx_dict[prefix]["maxlength"]
     if net = <%= prefix %> then {
 %% else
-    if net ~ [ <%= prefix %>{<%= data[prefix]["prefixlen"] %>,<%= data[prefix]["maxlength"] %>} ] then {
+    if net ~ [ <%= prefix %>{<%= pfx_dict[prefix]["prefixlen"] %>,<%= pfx_dict[prefix]["maxlength"] %>} ] then {
 %% endif
-%%     for origin in data[prefix]["origins"]
+%%     for origin in pfx_dict[prefix]["origins"]
 %%         if origin == 0
         return false;
 %% else

@@ -107,22 +107,24 @@ def main():
     else:
         validator_export = json.load(open(args.cache, "r"))
 
-    data = load_tree(args.afi, validator_export)
+    data = load_pfx_dict(args.afi, validator_export)
+    data['afi'] = args.afi
 
     if args.output == "-":
-        print(template.render(data=data))
+        print(template.render(**data))
     else:
         f = open(args.output, 'w')
         f.write(template.render(data=data))
         f.close
 
 
-def load_tree(afi, export):
+def load_pfx_dict(afi, export):
     """
     :param afi:     which address family to filter for
     :param export:  the JSON blob with all ROAs
     """
-    tree = {}
+    pfx_dict = {}
+    origin_dict = {}
 
     """ each roa has these fields:
         asn, prefix, maxLength, ta
@@ -147,18 +149,26 @@ def load_tree(afi, export):
             continue
 
         prefix = str(prefix_obj)
+        prefixlen = prefix_obj.prefixlen
+        maxlength = int(roa['maxLength'])
 
-        if prefix not in tree:
-            tree[prefix] = {}
-            tree[prefix]['origins'] = [asn]
+        if prefix not in pfx_dict:
+            pfx_dict[prefix] = {}
+            pfx_dict[prefix]['origins'] = [asn]
         else:
-            if asn not in tree[prefix]['origins']:
-                tree[prefix]['origins'] += [asn]
+            if asn not in pfx_dict[prefix]['origins']:
+                pfx_dict[prefix]['origins'] += [asn]
 
-        tree[prefix]['maxlength'] = int(roa['maxLength'])
-        tree[prefix]['prefixlen'] = prefix_obj.prefixlen
+        pfx_dict[prefix]['maxlength'] = maxlength
+        pfx_dict[prefix]['prefixlen'] = prefixlen
 
-    return tree
+        if asn not in origin_dict:
+            origin_dict[asn] = {}
+
+        origin_dict[asn][prefix] = {'maxlength': maxlength,
+                                    'length': prefixlen}
+
+    return {"pfx_dict": pfx_dict, "origin_dict": origin_dict}
 
 if __name__ == '__main__':
     main()

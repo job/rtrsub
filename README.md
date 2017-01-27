@@ -11,21 +11,35 @@ this tool to any platform or routing policy configuration style.
 
 Review the [bird.j2](../master/template-examples/bird.j2) for an example.
 
-The dictionary available to the template is called `data`. Layout of the
-dictionary is as following:
+There are a number of variables available to the template, as following:
 
 ```
 {
-    '151.232.23.0/24': {
-        'origins': [59587]
-    },
-    '31.5.128.0/17': {
-        'origins': [6830]
-    },
-    '84.218.240.0/20': {
-        'origins': [2119]
+    "afi": "ipv4",
+    "pfx_dict": {
+            "195.221.191.0/20": {
+                "prefixlen": 20,
+                "origins": [
+                    1725,
+                    2342
+                ],
+                "maxlength": 24
+            },
+            ... etc ...
+        },
+    "origin_dict": {
+        "57348": {
+            "185.67.149.0/24": {
+                "length": 24,
+                "maxlength": 24
+            },
+            "185.67.148.0/24": {
+                "length": 24,
+                "maxlength": 24
+            }
+        },
+        ... etc ...
     }
-    ... etc etc ...
 }
 ```
 
@@ -56,4 +70,4 @@ Vurt:rtrsub job$ python rtrsub/cli.py --afi ipv4 < template-examples/bird.j2 > e
 Vurt:rtrsub job$
 ```
 
-Copyright (c) 2016 Job Snijders <job@instituut.net>
+Copyright (c) 2016-2017 Job Snijders <job@instituut.net>
