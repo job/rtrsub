@@ -35,16 +35,18 @@ function complies_with_roa()
      return false;
 }
 
-{%- for origin in origin_dict %}
-function match_AS{{ origin }}_{{ afi }}()
-prefix set roas;
+function match_roa_{{ afi }}(int asn)
+{%- for origin in origin_dict|sort() %}
+prefix set AS{{ origin }};
+{%- endfor %}
 {
-    roas = [
+{%- for origin in origin_dict %}
+    AS{{ origin }} = [
         {% for prefix in origin_dict[origin] -%}
 {%- if origin_dict[origin][prefix]['length'] == origin_dict[origin][prefix]['maxlength'] -%}
-    {{ prefix }}
+{{ prefix }}
 {%- else -%}
-    {{ prefix }}{{ "{" }}{{ origin_dict[origin][prefix]['length'] }},{{ origin_dict[origin][prefix]['maxlength'] }}{{ "}" }}
+{{ prefix }}{{ "{" }}{{ origin_dict[origin][prefix]['length'] }},{{ origin_dict[origin][prefix]['maxlength'] }}{{ "}" }}
 {%- endif -%}
 {%- if not loop.last -%},{%- endif -%}
 {%- if loop.index % 4 == 0 -%}
@@ -52,14 +54,14 @@ prefix set roas;
 {%- else -%}
 {{ " " }}
 {%- endif -%}
-{%- endfor %}
+{%- endfor -%}
     ];
-    if net ~ roas then {
-        return true;
-    }
+{% endfor %}
+{%- for origin in origin_dict|sort() %}
+    if (asn = {{ origin }} && net ~ AS{{ origin }}) then return true;
+{%- endfor %}
     return false;
 }
-{% endfor %}
 
 filter check_roa
 {
