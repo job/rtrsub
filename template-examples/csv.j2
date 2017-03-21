@@ -17,7 +17,7 @@ prefix,prefix_length,max_length,origin_asns
 {%- for prefix in pfx_dict %}
 {{ prefix }},{{ pfx_dict[prefix]["prefixlen"] }},{{ pfx_dict[prefix]["maxlength"] }},
 {%- for origin in pfx_dict[prefix]["origins"] %}
-{%- if origin == 0 %}
+{%- if origin == 0 -%}
 None
 {%- else -%}
 {{ origin }}
