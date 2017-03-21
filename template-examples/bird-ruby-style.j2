@@ -27,7 +27,7 @@ function complies_with_roa()
 %% else
     if net ~ [ <%= prefix %>{<%= pfx_dict[prefix]["prefixlen"] %>,<%= pfx_dict[prefix]["maxlength"] %>} ] then {
 %% endif
-%%     for origin in pfx_dict[prefix]["origins"]
+%%     for origin in pfx_dict[prefix]["origins"]|sort(reverse=True)
 %%         if origin == 0
         return false;
 %% else

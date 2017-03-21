@@ -23,7 +23,7 @@ function complies_with_roa()
 {
 {%- for prefix in pfx_dict %}
     if net = {{ prefix }} then {
-{%- for origin in pfx_dict[prefix]["origins"] %}
+{%- for origin in pfx_dict[prefix]["origins"]|sort(reverse=True) %}
 {%- if origin == 0 %}
         return false;
 {%- else %}
