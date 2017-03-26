@@ -30,6 +30,7 @@
 from __future__ import print_function
 
 from ipaddress import ip_network
+from operator import itemgetter
 import jinja2
 import json
 import pprint
@@ -125,6 +126,7 @@ def load_pfx_dict(afi, export):
     """
     pfx_dict = {}
     origin_dict = {}
+    pfx_list = []
 
     """ each roa has these fields:
         asn, prefix, maxLength, ta
@@ -161,6 +163,7 @@ def load_pfx_dict(afi, export):
 
         pfx_dict[prefix]['maxlength'] = maxlength
         pfx_dict[prefix]['prefixlen'] = prefixlen
+        pfx_list.append((prefix, prefixlen))
 
         if asn not in origin_dict:
             origin_dict[asn] = {}
@@ -168,7 +171,10 @@ def load_pfx_dict(afi, export):
         origin_dict[asn][prefix] = {'maxlength': maxlength,
                                     'length': prefixlen}
 
-    return {"pfx_dict": pfx_dict, "origin_dict": origin_dict}
+    pfx_list = map(lambda x: x[0], sorted(pfx_list, key=itemgetter(1)))
+
+    return {"pfx_dict": pfx_dict, "origin_dict": origin_dict,
+            "pfx_list": pfx_list}
 
 if __name__ == '__main__':
     main()

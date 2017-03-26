@@ -1,5 +1,7 @@
 {
+    "__comment": "the Address Family",
     "afi": "ipv4",
+    "__comment": "the pfx_dict is useful to go from a prefix to the authorised ASNs",
      "pfx_dict": {
             "10.232.23.0/16": {
                 "prefixlen": 16,
@@ -18,6 +20,7 @@
             },
             ...
         },
+    "__comment": "origin_dict is useful to go from an ASN to prefixes",
     "origin_dict": {
         "262146": {
             "186.96.252.0/22": {
@@ -36,5 +39,7 @@
             }
         },
         ....
-    }
+    },
+    "__comment": "this is sorted by prefix length, shortest prefixlen first",
+    "pfx_list": ["2a07:8980::/29", "2a07:8980:1a::/48", "..."]
 }
