@@ -29,6 +29,7 @@
 
 from __future__ import print_function
 
+from collections import OrderedDict
 from ipaddress import ip_network
 from operator import itemgetter
 import jinja2
@@ -171,7 +172,10 @@ def load_pfx_dict(afi, export):
         origin_dict[asn][prefix] = {'maxlength': maxlength,
                                     'length': prefixlen}
 
-    pfx_list = set(map(lambda x: x[0], sorted(pfx_list, key=itemgetter(1))))
+    # order the list of prefixes by prefix length
+    pfx_list = map(lambda x: x[0], sorted(pfx_list, key=itemgetter(1)))
+    # deduplicate the list and maintain the order
+    pfx_list = list(OrderedDict.fromkeys(pfx_list))
 
     return {"pfx_dict": pfx_dict, "origin_dict": origin_dict,
             "pfx_list": pfx_list}
