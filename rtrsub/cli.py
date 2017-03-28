@@ -171,7 +171,7 @@ def load_pfx_dict(afi, export):
         origin_dict[asn][prefix] = {'maxlength': maxlength,
                                     'length': prefixlen}
 
-    pfx_list = map(lambda x: x[0], sorted(pfx_list, key=itemgetter(1)))
+    pfx_list = set(map(lambda x: x[0], sorted(pfx_list, key=itemgetter(1))))
 
     return {"pfx_dict": pfx_dict, "origin_dict": origin_dict,
             "pfx_list": pfx_list}
