@@ -53,7 +53,7 @@ if sys.argv[-1] == 'publish':
     sys.exit()
 
 install_reqs = parse_requirements('requirements.txt')
-reqs = [str(ir.req) for ir in install_reqs]
+reqs = install_reqs
 
 setup(
     name='rtrsub',
