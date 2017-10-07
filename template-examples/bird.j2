@@ -13,13 +13,6 @@ origin_to_roa(int asn)
     if no IRR route object exists, but a valid ROA + announcement exist.
 #}
 
-define myas = 197032;
-define accepted = 1;
-define rejected = 2;
-define a_rpki_valid = 1;
-define a_rpki_unknown = 2;
-define r_rpki_invalid = 1;
-
 define ROAS = [
         {% for prefix in aggregated_pfx_list -%}
 {{ prefix }}+
@@ -102,20 +95,17 @@ function reject_rpki_invalid()
 {
     if is_roa_covered_prefix() then {
         if complies_with_roa() then {
-            /* add marker to routes for which a valid matching ROA exists */
-            bgp_large_community.add((myas, accepted, a_rpki_valid));
+            /* add rfc8097 marker to routes for which a valid matching ROA exists */
             bgp_ext_community.add((unknown 0x4300, 0, 0));
         }
         else {
-            print "Reject: ROA check failed for ", net, " ", bgp_path, " protocol: ", proto;
-            bgp_large_community.add((myas, rejected, r_rpki_invalid));
+            print "Reject: RPKI ROA check failed for ", net, " ", bgp_path, " protocol: ", proto;
             bgp_ext_community.add((unknown 0x4300, 0, 2));
             reject;
         }
     }
     else {
-        /* add marker to routes for which no covering ROA exists */
-        bgp_large_community.add((myas, accepted, a_rpki_unknown));
+        /* add rfc8097 marker to routes for which no covering ROA exists */
         bgp_ext_community.add((unknown 0x4300, 0, 1));
     }
 }
