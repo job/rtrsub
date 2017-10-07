@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # rtrsub - A RTR Substitution
 #
-# Copyright (C) 2016 Job Snijders <job@instituut.net>
+# Copyright (C) 2016-2017 Job Snijders <job@instituut.net>
 #
 # This file is part of rtrsub
 #
@@ -35,6 +35,7 @@ from operator import itemgetter
 import jinja2
 import json
 import pprint
+import radix
 import os
 import sys
 
@@ -120,6 +121,19 @@ def main():
         f.close
 
 
+def aggregate_roas(rtree):
+    """
+    remove any supplied prefixes which are superfluous because they are
+    already included in another supplied prefix. For example, 203.97.2.0/24
+    would be removed if 203.97.0.0/17 was also supplied.
+    """
+    prefixes = list(rtree.prefixes())
+    for prefix in prefixes:
+        if not prefix == rtree.search_worst(prefix).prefix:
+            rtree.delete(prefix)
+    return rtree.prefixes()
+
+
 def load_pfx_dict(afi, export):
     """
     :param afi:     which address family to filter for
@@ -128,6 +142,8 @@ def load_pfx_dict(afi, export):
     pfx_dict = {}
     origin_dict = {}
     pfx_list = []
+
+    rtree = radix.Radix()
 
     """ each roa has these fields:
         asn, prefix, maxLength, ta
@@ -165,6 +181,7 @@ def load_pfx_dict(afi, export):
         pfx_dict[prefix]['maxlength'] = maxlength
         pfx_dict[prefix]['prefixlen'] = prefixlen
         pfx_list.append((prefix, prefixlen))
+        rtree.add(network=prefix)
 
         if asn not in origin_dict:
             origin_dict[asn] = {}
@@ -176,9 +193,10 @@ def load_pfx_dict(afi, export):
     pfx_list = map(lambda x: x[0], sorted(pfx_list, key=itemgetter(1)))
     # deduplicate the list and maintain the order
     pfx_list = list(OrderedDict.fromkeys(pfx_list))
+    aggregated_pfx_list = aggregate_roas(rtree)
 
     return {"pfx_dict": pfx_dict, "origin_dict": origin_dict,
-            "pfx_list": pfx_list}
+            "pfx_list": pfx_list, "aggregated_pfx_list": aggregated_pfx_list}
 
 if __name__ == '__main__':
     main()
