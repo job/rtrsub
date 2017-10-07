@@ -116,7 +116,7 @@ def main():
         print(template.render(**data))
     else:
         f = open(args.output, 'w')
-        f.write(template.render(data=data))
+        f.write(template.render(**data))
         f.close
 
 
