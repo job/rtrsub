@@ -1,3 +1,24 @@
+{#
+
+Common RPKI functions to use with BIRD
+
+reject_rpki_invalid() - implicit arguments
+	depends on these two functions:
+		- is_roa_covered_prefix() - implicit arguments
+		- complies_with_roa() - implicit arguments
+	to be applied on each and every EBGP session
+
+origin_to_roa(int asn)
+	to be used to accept prefixes from an adjacent ASN
+	if no IRR route object exists, but a valid ROA + announcement exist.
+#}
+
+define myas = 197032;
+define accepted = 1;
+define rejected = 2;
+define a_rpki_valid = 1;
+define r_rpki_invalid = 1;
+
 function is_roa_covered_prefix()
 prefix set roas;
 {
@@ -5,11 +26,7 @@ prefix set roas;
         {% for prefix in pfx_dict -%}
 {{ prefix }}+
 {%- if not loop.last -%},{%- endif -%}
-{%- if loop.index % 4 == 0 -%}
 {{ "\n        " }}
-{%- else -%}
-{{ " " }}
-{%- endif -%}
 {%- endfor %}
     ];
 
@@ -22,7 +39,11 @@ prefix set roas;
 function complies_with_roa()
 {
 {%- for prefix in pfx_dict %}
+{%- if pfx_dict[prefix]["prefixlen"] == pfx_dict[prefix]["maxlength"] %}
     if net = {{ prefix }} then {
+{%- else %}
+    if net ~ [ {{ prefix }}{{ "{" }}{{ pfx_dict[prefix]["prefixlen"] }},{{ pfx_dict[prefix]["maxlength"] }}{{ "}" }} ] then {
+{%- endif %}
 {%- for origin in pfx_dict[prefix]["origins"]|sort(reverse=True) %}
 {%- if origin == 0 %}
         return false;
@@ -35,13 +56,9 @@ function complies_with_roa()
      return false;
 }
 
-function match_roa_{{ afi }}(int asn)
-{%- for origin in origin_dict|sort() %}
-prefix set AS{{ origin }};
-{%- endfor %}
-{
+
 {%- for origin in origin_dict %}
-    AS{{ origin }} = [
+define roas_AS{{ origin }} = [
         {% for prefix in origin_dict[origin] -%}
 {%- if origin_dict[origin][prefix]['length'] == origin_dict[origin][prefix]['maxlength'] -%}
 {{ prefix }}
@@ -57,18 +74,28 @@ prefix set AS{{ origin }};
 {%- endfor -%}
     ];
 {% endfor %}
+
+function origin_to_roa(int asn)
+{
+    case asn {
 {%- for origin in origin_dict|sort() %}
-    if (asn = {{ origin }} && net ~ AS{{ origin }}) then return true;
+        {{ origin }}: return net ~ roas_AS{{ origin }};
 {%- endfor %}
+    }
     return false;
 }
 
-filter check_roa
+function reject_rpki_invalid()
 {
     if is_roa_covered_prefix() then {
         if complies_with_roa() then {
-            accept;
+            /* add marker to routes for which a valid matching ROA exists */
+            bgp_large_community.add((myas, accepted, a_rpki_valid));
         }
-        reject;
+        else {
+            print "Reject: ROA check failed for ", net, " ", bgp_path, " protocol: ", proto;
+            bgp_large_community.add((myas, rejected, r_rpki_invalid));
+            reject;
+        }
     }
 }
