@@ -3,62 +3,37 @@
 Common RPKI functions to use with BIRD
 
 reject_rpki_invalid() - implicit arguments
-	depends on these two functions:
-		- is_roa_covered_prefix() - implicit arguments
-		- complies_with_roa() - implicit arguments
-	to be applied on each and every EBGP session
+    depends on these two functions:
+        - is_roa_covered_prefix() - implicit arguments
+        - complies_with_roa() - implicit arguments
+    to be applied on each and every EBGP session
 
 origin_to_roa(int asn)
-	to be used to accept prefixes from an adjacent ASN
-	if no IRR route object exists, but a valid ROA + announcement exist.
+    to be used to accept prefixes from an adjacent ASN
+    if no IRR route object exists, but a valid ROA + announcement exist.
 #}
 
 define myas = 197032;
 define accepted = 1;
 define rejected = 2;
 define a_rpki_valid = 1;
+define a_rpki_unknown = 2;
 define r_rpki_invalid = 1;
 
-function is_roa_covered_prefix()
-prefix set roas;
-{
-     roas = [
-        {% for prefix in pfx_dict -%}
+define ROAS = [
+        {% for prefix in aggregated_pfx_list -%}
 {{ prefix }}+
 {%- if not loop.last -%},{%- endif -%}
+{%- if loop.index % 4 == 0 and not loop.last -%}
 {{ "\n        " }}
+{%- else -%}
+{{ " " }}
+{%- endif -%}
 {%- endfor %}
-    ];
+        ];
 
-    if net ~ roas then {
-        return true;
-    }
-    else return false;
-}
-
-function complies_with_roa()
-{
-{%- for prefix in pfx_dict %}
-{%- if pfx_dict[prefix]["prefixlen"] == pfx_dict[prefix]["maxlength"] %}
-    if net = {{ prefix }} then {
-{%- else %}
-    if net ~ [ {{ prefix }}{{ "{" }}{{ pfx_dict[prefix]["prefixlen"] }},{{ pfx_dict[prefix]["maxlength"] }}{{ "}" }} ] then {
-{%- endif %}
-{%- for origin in pfx_dict[prefix]["origins"]|sort(reverse=True) %}
-{%- if origin == 0 %}
-        return false;
-{%- else %}
-        if bgp_path.last = {{ origin }} then return true;
-{%- endif %}
-{%- endfor %}
-     }
-{%- endfor %}
-     return false;
-}
-
-
-{%- for origin in origin_dict %}
-define roas_AS{{ origin }} = [
+{% for origin in origin_dict %}
+define ROAS_AS{{ origin }} = [
         {% for prefix in origin_dict[origin] -%}
 {%- if origin_dict[origin][prefix]['length'] == origin_dict[origin][prefix]['maxlength'] -%}
 {{ prefix }}
@@ -66,7 +41,7 @@ define roas_AS{{ origin }} = [
 {{ prefix }}{{ "{" }}{{ origin_dict[origin][prefix]['length'] }},{{ origin_dict[origin][prefix]['maxlength'] }}{{ "}" }}
 {%- endif -%}
 {%- if not loop.last -%},{%- endif -%}
-{%- if loop.index % 4 == 0 -%}
+{%- if loop.index % 4 == 0 and not loop.last -%}
 {{ "\n        " }}
 {%- else -%}
 {{ " " }}
@@ -75,14 +50,52 @@ define roas_AS{{ origin }} = [
     ];
 {% endfor %}
 
+function complies_with_roa()
+{
+    case bgp_path.last {
+{%- for origin in origin_dict|sort() if not origin == 0 %}
+        {{ origin }}:
+            if net ~ [
+                {% for prefix in origin_dict[origin].keys() -%}
+{%- if origin_dict[origin][prefix]["length"] == origin_dict[origin][prefix]["maxlength"] -%}
+{{ prefix }}
+{%- else -%}
+{{ prefix }}{{ "{" }}{{ origin_dict[origin][prefix]["length"] }},{{ origin_dict[origin][prefix]["maxlength"] }}{{ "}" }}
+{%- endif %}
+{%- if not loop.last -%},{%- endif -%}
+{%- if loop.index % 4 == 0 and not loop.last -%}
+{{ "\n                " }}
+{%- else -%}
+{{ " " }}
+{%- endif -%}
+{%- endfor %}
+            ] then return true;
+            return false;
+{%- endfor %}
+        else:
+            return false;
+    }
+}
+
+function is_roa_covered_prefix()
+prefix set roas;
+{
+    if net ~ ROAS then {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 function origin_to_roa(int asn)
 {
     case asn {
-{%- for origin in origin_dict|sort() %}
-        {{ origin }}: return net ~ roas_AS{{ origin }};
+{%- for origin in origin_dict|sort() if not origin == 0 %}
+        {{ origin }}: return net ~ ROAS_AS{{ origin }};
 {%- endfor %}
+        else: return false;
     }
-    return false;
 }
 
 function reject_rpki_invalid()
@@ -91,11 +104,18 @@ function reject_rpki_invalid()
         if complies_with_roa() then {
             /* add marker to routes for which a valid matching ROA exists */
             bgp_large_community.add((myas, accepted, a_rpki_valid));
+            bgp_ext_community.add((unknown 0x4300, 0, 0));
         }
         else {
             print "Reject: ROA check failed for ", net, " ", bgp_path, " protocol: ", proto;
             bgp_large_community.add((myas, rejected, r_rpki_invalid));
+            bgp_ext_community.add((unknown 0x4300, 0, 2));
             reject;
         }
+    }
+    else {
+        /* add marker to routes for which no covering ROA exists */
+        bgp_large_community.add((myas, accepted, a_rpki_unknown));
+        bgp_ext_community.add((unknown 0x4300, 0, 1));
     }
 }
