@@ -32,26 +32,16 @@ from __future__ import print_function
 from collections import OrderedDict
 from ipaddress import ip_network
 from operator import itemgetter
+
+import argparse
 import jinja2
 import json
+import os
 import pprint
 import radix
-import os
+import requests
+import rtrsub
 import sys
-
-try:
-    import argparse
-except ImportError:
-    print("ERROR: install argparse manually")
-    print("HINT: sudo pip install argparse")
-    sys.exit(2)
-
-try:
-    import requests
-except ImportError:
-    print("ERROR: requests missing")
-    print("HINT: pip install requests")
-    sys.exit(2)
 
 
 def main():
@@ -74,8 +64,8 @@ def main():
                         default='-',
                         help='Output file (default: STDOUT)')
 
-    parser.add_argument('-v', dest='version', action='store_true',
-                        help="Display rtrsub version")
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s ' + rtrsub.__version__)
 
     parser.add_argument('-r', dest='ruby', action='store_true',
                         help='Use other delimiters')
@@ -102,7 +92,8 @@ def main():
         template_stdin = sys.stdin.read()
         template = env.from_string(template_stdin)
     else:
-        template = env.from_string(open(os.path.abspath(args.template), 'r').read())
+        template = env.from_string(
+            open(os.path.abspath(args.template), 'r').read())
 
     if 'http' in args.cache:
         r = requests.get(args.cache)
@@ -197,6 +188,3 @@ def load_pfx_dict(afi, export):
 
     return {"pfx_dict": pfx_dict, "origin_dict": origin_dict,
             "pfx_list": pfx_list, "aggregated_pfx_list": aggregated_pfx_list}
-
-if __name__ == '__main__':
-    main()

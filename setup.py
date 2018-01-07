@@ -75,5 +75,5 @@ setup(
         'Programming Language :: Python :: 3 :: Only'
     ],
     packages=find_packages(exclude=['tests', 'tests.*']),
-    entry_points={'console_scripts': ['rtrsub = rtrsub.cli:main']},
+    entry_points={'console_scripts': ['rtrsub = rtrsub.rtrsub:main']},
 )
