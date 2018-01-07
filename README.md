@@ -6,6 +6,14 @@ rtrsub - RTR Substitution
 A substitute for the RTR protocol: generate configuration blobs for your
 routers instead of using the RTR protocol to interact with RPKI.
 
+Installation
+------------
+
+`pip3 install rtrsub`
+
+Use
+---
+
 Templates are in jinja2 format. Thanks to the template approach, you can adopt
 this tool to any platform or routing policy configuration style.
 
@@ -59,15 +67,15 @@ hanna:rtrsub job$
 ```
 
 ```
-Vurt:rtrsub job$ python rtrsub/cli.py --afi ipv4 -t template-examples/bird.j2 -o example-output.conf
+Vurt:rtrsub job$ rtrsub --afi ipv4 -t template-examples/bird.j2 -o example-output.conf
 Vurt:rtrsub job$
 ```
 
 or
 
 ```
-Vurt:rtrsub job$ python rtrsub/cli.py --afi ipv4 < template-examples/bird.j2 > example-output.conf
+Vurt:rtrsub job$ rtrsub --afi ipv4 < template-examples/bird.j2 > example-output.conf
 Vurt:rtrsub job$
 ```
 
-Copyright (c) 2016-2017 Job Snijders <job@instituut.net>
+Copyright (c) 2016-2018 Job Snijders <job@instituut.net>
