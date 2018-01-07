@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2016 Job Snijders <job@instituut.net>
 #
 # This file is part of rtrsub
@@ -46,7 +46,7 @@ with codecs.open(join(here, 'README.md'), encoding='utf-8') as f:
     README = f.read()
 
 if sys.argv[-1] == 'publish':
-    os.system('python2.7 setup.py sdist upload')
+    os.system('python3 setup.py sdist upload')
     print("You probably want to also tag the version now:")
     print(("  git tag -a %s -m 'version %s'" % (version, version)))
     print("  git push --tags")
