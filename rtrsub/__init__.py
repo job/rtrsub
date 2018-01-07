@@ -5,5 +5,3 @@ __copyright__ = "Copyright 2017, Job Snijders"
 __license__ = "BSD 2-Clause"
 __status__ = "Development"
 __url__ = "https://github.com/job/rtrsub"
-
-from .rtrsub import main
