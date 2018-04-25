@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # rtrsub - A RTR Substitution
 #
-# Copyright (C) 2016-2017 Job Snijders <job@instituut.net>
+# Copyright (C) 2016-2018 Job Snijders <job@instituut.net>
 #
 # This file is part of rtrsub
 #
@@ -125,6 +125,16 @@ def aggregate_roas(rtree):
 
 def load_pfx_dict(afi, export):
     """
+    ****
+    TO BE DEPRECATED: this function does not deal with
+    conflicting overlapping ROAs, example:
+          ASN   Prefix  Maximum Length  Trust Anchor
+        27738   191.99.0.0/16   16  LACNIC RPKI Root
+        27738   191.99.0.0/16   24  LACNIC RPKI Root
+        27738   191.99.0.0/16   16  LACNIC RPKI Root
+        27738   191.99.0.0/16   21  LACNIC RPKI Root
+    ****
+
     :param afi:     which address family to filter for
     :param export:  the JSON blob with all ROAs
     """
