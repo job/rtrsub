@@ -100,6 +100,7 @@ def main():
         validator_export = json.load(open(args.cache, "r"))
 
     data = load_pfx_dict(args.afi, validator_export)
+    data['roa_list'] = load_roa_list(args.afi, validator_export)
     data['afi'] = args.afi
 
     if args.output == "-":
@@ -196,3 +197,48 @@ def load_pfx_dict(afi, export):
 
     return {"pfx_dict": pfx_dict, "origin_dict": origin_dict,
             "pfx_list": pfx_list, "aggregated_pfx_list": aggregated_pfx_list}
+
+def load_roa_list(afi, export):
+    """
+    :param afi:     which address family to filter for
+    :param export:  the JSON blob with all ROAs
+    """
+
+    roa_list = []
+
+    """ each roa tuple has these fields:
+        asn, prefix, maxLength, ta
+    """
+
+    for roa in export['roas']:
+        prefix_obj = ip_network(roa['prefix'])
+        if afi == "ipv4":
+            if prefix_obj.version == 6:
+                continue
+        elif afi == "ipv6":
+            if prefix_obj.version == 4:
+                continue
+
+        try:
+            asn = int(roa['asn'].replace("AS", ""))
+            if not 0 <= asn < 4294967296:
+                raise ValueError
+        except ValueError:
+            print("ERROR: ASN malformed", file=sys.stderr)
+            print(pprint.pformat(roa, indent=4), file=sys.stderr)
+            continue
+
+        prefix = str(prefix_obj)
+        prefixlen = prefix_obj.prefixlen
+        maxlength = int(roa['maxLength'])
+
+        roa_list.append((prefix, prefixlen, maxlength, asn))
+
+    roa_list_uniq = []
+    for roa in set(roa_list):
+        roa_list_uniq.append({'p': roa[0],
+                              'l': roa[1],
+                              'm': roa[2],
+                              'o': roa[3]})
+
+    return roa_list_uniq

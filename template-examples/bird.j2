@@ -31,10 +31,8 @@ define ROAS_AS{{ origin }} = [
 {% endfor %}
 
 roa table ROAS {
-{%- for prefix in pfx_list %}
-{%- for origin in pfx_dict[prefix]["origins"]|sort(reverse=True) if not origin == 0 %}
-    roa {{ prefix }} max {{ pfx_dict[prefix]["maxlength"] }} as {{ origin }};
-{%- endfor -%}
+{%- for roa in roa_list %}
+    roa {{ roa['p'] }} max {{ roa['m'] }} as {{ roa['o'] }};
 {%- endfor -%}
 }
 
