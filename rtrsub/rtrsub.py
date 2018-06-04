@@ -94,7 +94,7 @@ def main():
             open(os.path.abspath(args.template), 'r').read())
 
     if 'http' in args.cache:
-        r = requests.get(args.cache)
+        r = requests.get(args.cache, headers={'Accept': 'text/json'})
         validator_export = r.json()
     else:
         validator_export = json.load(open(args.cache, "r"))
