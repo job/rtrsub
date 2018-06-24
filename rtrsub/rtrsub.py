@@ -65,26 +65,13 @@ def main():
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s ' + rtrsub.__version__)
 
-    parser.add_argument('-r', dest='ruby', action='store_true',
-                        help='Use other delimiters')
-
     args = parser.parse_args()
 
     if args.afi not in ["ipv4", "ipv6", "mixed"]:
         print("ERROR: afi must be 'ipv4', 'ipv6' or 'mixed'")
         sys.exit(2)
 
-    if args.ruby:
-        env = jinja2.Environment(
-            block_start_string='<%',
-            block_end_string='%>',
-            variable_start_string='<%=',
-            variable_end_string='%>',
-            comment_start_string='<#',
-            comment_end_string='#>',
-            line_statement_prefix="%%")
-    else:
-        env = jinja2.Environment()
+    env = jinja2.Environment()
 
     if args.template == "-":
         template_stdin = sys.stdin.read()
