@@ -8,9 +8,9 @@ function reject_rpki_invalid() - no explicit arguments
 #}
 
 roa table ROAS {
-{%- for roa in roa_list %}
+{%- for roa in roa_list|sort(attribute='o') %}
     roa {{ roa['p'] }} max {{ roa['m'] }} as {{ roa['o'] }};
-{%- endfor -%}
+{%- endfor %}
 }
 
 function reject_rpki_invalid()
