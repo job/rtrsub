@@ -47,10 +47,10 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('-c', dest='cache',
-                        default="http://localcert.ripe.net:8088/export.json",
+                        default="https://rpki.gin.ntt.net/api/export.json",
                         type=str,
                         help="""Location of the RPKI Cache in JSON format
-(default: http://localcert.ripe.net:8088/export.json)""")
+(default: https://rpki.gin.ntt.net/api/export.json)""")
 
     parser.add_argument('--afi', dest='afi', type=str, required=True,
                         help="[ ipv4 | ipv6 | mixed ]")
