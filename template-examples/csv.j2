@@ -12,8 +12,7 @@ prefix,prefix_length,max_length,origin_asns
 180.234.148.0/24,24,24,45951
 202.163.81.0/24,24,24,9541|24440
 
-#}
-prefix,prefix_length,max_length,origin_asns
+#}prefix,prefix_length,max_length,origin_asns
 {%- for prefix in pfx_dict %}
 {{ prefix }},{{ pfx_dict[prefix]["prefixlen"] }},{{ pfx_dict[prefix]["maxlength"] }},
 {%- for origin in pfx_dict[prefix]["origins"] %}

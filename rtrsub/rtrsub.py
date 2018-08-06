@@ -62,10 +62,18 @@ def main():
                         default='-',
                         help='Output file (default: STDOUT)')
 
+    parser.add_argument('--asns', dest='asns', type=str,
+                        help="Comma separated list of ASNs")
+
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s ' + rtrsub.__version__)
 
     args = parser.parse_args()
+
+    if args.asns:
+        asns = list(map(int, args.asns.split(',')))
+    else:
+        asns = None
 
     if args.afi not in ["ipv4", "ipv6", "mixed"]:
         print("ERROR: afi must be 'ipv4', 'ipv6' or 'mixed'")
@@ -86,8 +94,8 @@ def main():
     else:
         validator_export = json.load(open(args.cache, "r"))
 
-    data = load_pfx_dict(args.afi, validator_export)
-    data['roa_list'] = load_roa_list(args.afi, validator_export)
+    data = load_pfx_dict(args.afi, validator_export, asns)
+    data['roa_list'] = load_roa_list(args.afi, validator_export, asns)
     data['afi'] = args.afi
 
     if args.output == "-":
@@ -111,7 +119,7 @@ def aggregate_roas(rtree):
     return rtree.prefixes()
 
 
-def load_pfx_dict(afi, export):
+def load_pfx_dict(afi, export, asns):
     """
     ****
     TO BE DEPRECATED: this function does not deal with
@@ -144,7 +152,6 @@ def load_pfx_dict(afi, export):
         elif afi == "ipv6":
             if prefix_obj.version == 4:
                 continue
-
         try:
             asn = int(roa['asn'].replace("AS", ""))
             if not 0 <= asn < 4294967296:
@@ -152,6 +159,11 @@ def load_pfx_dict(afi, export):
         except ValueError:
             print("ERROR: ASN malformed", file=sys.stderr)
             print(pprint.pformat(roa, indent=4), file=sys.stderr)
+            continue
+
+        if not asns:
+            pass
+        elif not asn in asns:
             continue
 
         prefix = str(prefix_obj)
@@ -185,7 +197,7 @@ def load_pfx_dict(afi, export):
     return {"pfx_dict": pfx_dict, "origin_dict": origin_dict,
             "pfx_list": pfx_list, "aggregated_pfx_list": aggregated_pfx_list}
 
-def load_roa_list(afi, export):
+def load_roa_list(afi, export, asns):
     """
     :param afi:     which address family to filter for
     :param export:  the JSON blob with all ROAs
@@ -223,9 +235,10 @@ def load_roa_list(afi, export):
 
     roa_list_uniq = []
     for roa in set(roa_list):
-        roa_list_uniq.append({'p': roa[0],
-                              'l': roa[1],
-                              'm': roa[2],
-                              'o': roa[3]})
+        if not asns or int(roa[3]) in asns:
+            roa_list_uniq.append({'p': roa[0],
+                                  'l': roa[1],
+                                  'm': roa[2],
+                                  'o': roa[3]})
 
     return roa_list_uniq
