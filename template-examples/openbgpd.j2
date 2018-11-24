@@ -1,20 +1,11 @@
-{#
-0) delete all valiation state communities from all announcements
-1) tag all prefixes with the 'unknown' community
-2) tag a matching prefixes as invalid
-3) tag a matching prefixes AND correct source ASN as valid
-#}
-match from any set { ext-community bovs not-found ext-community delete bovs invalid ext-community delete bovs valid }
-{% for prefix in pfx_list %}
-match from any prefix {{ prefix }} or-longer set ext-community bovs invalid
-{% for origin in pfx_dict[prefix]["origins"]|sort(reverse=True) if not origin == 0 -%}
+roa-set {
+{% for prefix in pfx_list -%}
+{% for origin in pfx_dict[prefix]["origins"]|sort(reverse=True) -%}
 {% if pfx_dict[prefix]["prefixlen"] == pfx_dict[prefix]["maxlength"] -%}
-match from any prefix {{ prefix }} source-as {{ origin }} set ext-community bovs valid
+{{ "    " }}{{ prefix }} source-as {{ origin }}
 {% else -%}
-match from any prefix {{ prefix }} prefixlen {{ pfx_dict[prefix]["prefixlen"] }} - {{ pfx_dict[prefix]["maxlength"] }} source-as {{ origin }} set ext-community bovs valid
+{{ "    " }}{{ prefix }} maxlen {{ pfx_dict[prefix]["maxlength"] }} source-as {{ origin }}
 {% endif -%}
 {% endfor -%}
 {% endfor -%}
-{# clean up #}
-match from any ext-community bovs valid set { ext-community delete bovs invalid ext-community delete bovs not-found }
-match from any ext-community bovs invalid set { ext-community delete bovs not-found }
+}
