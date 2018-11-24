@@ -63,7 +63,8 @@ def main():
                         help='Output file (default: STDOUT)')
 
     parser.add_argument('--asns', dest='asns', type=str,
-                        help="Comma separated list of ASNs")
+                        help="""Limit output to the comma separated specified
+ASNs and related ROAs""")
 
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s ' + rtrsub.__version__)
@@ -94,7 +95,7 @@ def main():
     else:
         validator_export = json.load(open(args.cache, "r"))
 
-    data = load_pfx_dict(args.afi, validator_export, asns)
+    data = dict()
     data['roa_list'] = load_roa_list(args.afi, validator_export, asns)
     data['afi'] = args.afi
 
@@ -118,84 +119,6 @@ def aggregate_roas(rtree):
             rtree.delete(prefix)
     return rtree.prefixes()
 
-
-def load_pfx_dict(afi, export, asns):
-    """
-    ****
-    TO BE DEPRECATED: this function does not deal with
-    conflicting overlapping ROAs, example:
-          ASN   Prefix  Maximum Length  Trust Anchor
-        27738   191.99.0.0/16   16  LACNIC RPKI Root
-        27738   191.99.0.0/16   24  LACNIC RPKI Root
-        27738   191.99.0.0/16   16  LACNIC RPKI Root
-        27738   191.99.0.0/16   21  LACNIC RPKI Root
-    ****
-
-    :param afi:     which address family to filter for
-    :param export:  the JSON blob with all ROAs
-    """
-    pfx_dict = {}
-    origin_dict = {}
-    pfx_list = []
-
-    rtree = radix.Radix()
-
-    """ each roa has these fields:
-        asn, prefix, maxLength, ta
-    """
-
-    for roa in export['roas']:
-        prefix_obj = ip_network(roa['prefix'])
-        if afi == "ipv4":
-            if prefix_obj.version == 6:
-                continue
-        elif afi == "ipv6":
-            if prefix_obj.version == 4:
-                continue
-        try:
-            asn = int(roa['asn'].replace("AS", ""))
-            if not 0 <= asn < 4294967296:
-                raise ValueError
-        except ValueError:
-            print("ERROR: ASN malformed", file=sys.stderr)
-            print(pprint.pformat(roa, indent=4), file=sys.stderr)
-            continue
-
-        if not asns:
-            pass
-        elif not asn in asns:
-            continue
-
-        prefix = str(prefix_obj)
-        prefixlen = prefix_obj.prefixlen
-        maxlength = int(roa['maxLength'])
-
-        if prefix not in pfx_dict:
-            pfx_dict[prefix] = {}
-            pfx_dict[prefix]['origins'] = [asn]
-        else:
-            if asn not in pfx_dict[prefix]['origins']:
-                pfx_dict[prefix]['origins'] += [asn]
-
-        pfx_dict[prefix]['maxlength'] = maxlength
-        pfx_dict[prefix]['prefixlen'] = prefixlen
-        pfx_list.append((prefix, prefixlen))
-        rtree.add(network=prefix)
-
-        if asn not in origin_dict:
-            origin_dict[asn] = {}
-
-        origin_dict[asn][prefix] = {'maxlength': maxlength,
-                                    'length': prefixlen}
-
-    # order the list of prefixes by prefix length
-    pfx_list = map(lambda x: x[0], sorted(pfx_list, key=itemgetter(1)))
-    # deduplicate the list and maintain the order
-    pfx_list = list(OrderedDict.fromkeys(pfx_list))
-    aggregated_pfx_list = aggregate_roas(rtree)
-
-    return {"pfx_dict": pfx_dict, "origin_dict": origin_dict,
-            "pfx_list": pfx_list, "aggregated_pfx_list": aggregated_pfx_list}
 
 def load_roa_list(afi, export, asns):
     """
@@ -236,9 +159,9 @@ def load_roa_list(afi, export, asns):
     roa_list_uniq = []
     for roa in set(roa_list):
         if not asns or int(roa[3]) in asns:
-            roa_list_uniq.append({'p': roa[0],
-                                  'l': roa[1],
-                                  'm': roa[2],
-                                  'o': roa[3]})
+            roa_list_uniq.append({'prefix': roa[0],
+                                  'prefixlen': roa[1],
+                                  'maxlen': roa[2],
+                                  'origin': roa[3]})
 
     return roa_list_uniq

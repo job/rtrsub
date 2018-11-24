@@ -8,9 +8,13 @@ function reject_rpki_invalid() - no explicit arguments
 #}
 
 roa table ROAS {
-{%- for roa in roa_list|sort(attribute='o') %}
-    roa {{ roa['p'] }} max {{ roa['m'] }} as {{ roa['o'] }};
-{%- endfor %}
+{% for roa in roa_list|sort(attribute='origin') -%}
+{% if roa["prefixlen"] == roa["maxlen"] -%}
+{{ "    " }}roa {{ roa['prefix'] }} as {{ roa['origin'] }};
+{% else -%}
+{{ "    " }}roa {{ roa['prefix'] }} max {{ roa['maxlen'] }} as {{ roa['origin'] }};
+{% endif -%}
+{%- endfor -%}
 }
 
 function reject_rpki_invalid()

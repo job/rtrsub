@@ -1,45 +1,14 @@
-{
+[{
     "__comment": "the Address Family",
     "afi": "ipv4",
-    "__comment": "the pfx_dict is useful to go from a prefix to the authorised ASNs",
-     "pfx_dict": {
-            "10.232.23.0/16": {
-                "prefixlen": 16,
-                "origins": [
-                    59587
-                ],
-                "maxlength": 16
-            },
-            "195.221.191.0/20": {
-                "prefixlen": 20,
-                "origins": [
-                    1725,
-                    2342
-                ],
-                "maxlength": 24
-            },
-            ...
+    "__comment": "the roa_list is useful to go from a prefix to the authorised ASNs",
+    "roa_list": [
+        {
+            "prefix": "10.232.23.0",
+            "prefixlen": 16,
+            "maxlen": 16,
+            "origin": 59587
         },
-    "__comment": "origin_dict is useful to go from an ASN to prefixes",
-    "origin_dict": {
-        "262146": {
-            "186.96.252.0/22": {
-                "length": 22,
-                "maxlength": 24
-            }
-        },
-        "57348": {
-            "185.67.149.0/24": {
-                "length": 24,
-                "maxlength": 24
-            },
-            "185.67.148.0/24": {
-                "length": 24,
-                "maxlength": 24
-            }
-        },
-        ....
-    },
-    "__comment": "this is sorted by prefix length, shortest prefixlen first",
-    "pfx_list": ["2a07:8980::/29", "2a07:8980:1a::/48", "..."]
-}
+        ...
+    ]
+}]

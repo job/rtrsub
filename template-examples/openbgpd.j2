@@ -1,11 +1,9 @@
 roa-set {
-{% for prefix in pfx_list -%}
-{% for origin in pfx_dict[prefix]["origins"]|sort(reverse=True) -%}
-{% if pfx_dict[prefix]["prefixlen"] == pfx_dict[prefix]["maxlength"] -%}
-{{ "    " }}{{ prefix }} source-as {{ origin }}
+{% for roa in roa_list -%}
+{% if roa["prefixlen"] == roa["maxlen"] -%}
+{{ "    " }}{{ roa['prefix'] }} source-as {{ roa['origin'] }}
 {% else -%}
-{{ "    " }}{{ prefix }} maxlen {{ pfx_dict[prefix]["maxlength"] }} source-as {{ origin }}
+{{ "    " }}{{ roa['prefix'] }} maxlen {{ roa["maxlen"] }} source-as {{ roa['origin'] }}
 {% endif -%}
-{% endfor -%}
 {% endfor -%}
 }
