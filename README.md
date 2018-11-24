@@ -17,7 +17,7 @@ this tool to any platform or routing policy configuration style.
 
 Review the [bird.j2](../master/template-examples/bird.j2) for an example.
 
-There are a number of variables available to the template, please review the [JSON example](https://github.com/job/rtrsub/blob/master/template-examples/example-data-available-to-template.json):
+There are a number of variables available to the template, please review the [JSON example](https://github.com/job/rtrsub/blob/master/template-examples/example-data-available-to-template.json).
 
 ```
 hanna:rtrsub job$ rtrsub -h
