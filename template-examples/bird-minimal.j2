@@ -15,7 +15,7 @@ roa table ROAS {
 
 function reject_rpki_invalid()
 {
-    case roa_check(ROAS, net, bgp_path.last_nonaggregated) {
+    case roa_check(ROAS, net, bgp_path.last) {
     ROA_VALID:
         /* add rfc8097 marker to routes for which a valid matching ROA exists */
         bgp_ext_community.add((unknown 0x4300, 0, 0));
