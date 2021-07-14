@@ -26,7 +26,7 @@ usage: rtrsub [-h] [-c CACHE] --afi AFI [-t TEMPLATE] [-o OUTPUT] [-v]
 optional arguments:
   -h, --help   show this help message and exit
   -c CACHE     Location of the RPKI Cache in JSON format
-               (default: https://rpki.gin.ntt.net/api/export.json)
+               (default: https://console.rpki-client.org/vrps.json)
   --afi AFI    [ ipv4 | ipv6 | mixed ]
   -t TEMPLATE  Template file (default: STDIN)
   -o OUTPUT    Output file (default: STDOUT)

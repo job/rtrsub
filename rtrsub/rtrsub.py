@@ -47,10 +47,10 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('-c', dest='cache',
-                        default="https://rpki.gin.ntt.net/api/export.json",
+                        default="https://console.rpki-client.org/vrps.json",
                         type=str,
                         help="""Location of the RPKI Cache in JSON format
-(default: https://rpki.gin.ntt.net/api/export.json)""")
+(default: https://console.rpki-client.org/vrps.json)""")
 
     parser.add_argument('--afi', dest='afi', type=str, required=True,
                         help="[ ipv4 | ipv6 | mixed ]")
@@ -142,7 +142,7 @@ def load_roa_list(afi, export, asns):
                 continue
 
         try:
-            asn = int(roa['asn'].replace("AS", ""))
+            asn = roa['asn']
             if not 0 <= asn < 4294967296:
                 raise ValueError
         except ValueError:
